@@ -16,3 +16,6 @@
 [submodule "plugins/asdf"]
 	path = plugins/asdf
 	url = https://github.com/asdf-vm/asdf.git
+[submodule "themes/spaceship-prompt"]
+	path = themes/spaceship-prompt
+	url = https://github.com/spaceship-prompt/spaceship-prompt.git
