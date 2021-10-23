@@ -13,3 +13,6 @@
 [submodule "plugins/zsh-vi-mode"]
 	path = plugins/zsh-vi-mode
 	url = https://github.com/jeffreytse/zsh-vi-mode
+[submodule "plugins/asdf"]
+	path = plugins/asdf
+	url = https://github.com/asdf-vm/asdf.git
