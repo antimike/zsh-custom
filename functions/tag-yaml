@@ -1,0 +1,17 @@
+#!/bin/zsh -f
+# Adds items to a top-level key "tags" in passed YAML files, modifying them
+# in-place
+# Input:
+#   - Tags to add should be passed in the form +<tag>
+#   - Tags to remove should be passed as -<tag>
+#   - Files to modify should be passed as-is
+# Assumptions:
+#   - YAML filenames don't begin with either + or -
+#   - YAML document must be a map at top-level
+
+local -a yq_opts=( -Y -i )
+local script='.tags+=$tadd | .tags-=$trem'
+local tagadd='+' tagrem='-'
+yq $yq_opts $script ${${@##${tagadd}*}##${tagrem}*} \
+    --slurpfile tadd <(printf '"%s"' ${${(AM)@##${tagadd}*}#$tagadd}) \
+    --slurpfile trem <(printf '"%s"' ${${(AM)@##${tagrem}*}#$tagrem})

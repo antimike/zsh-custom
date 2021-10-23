@@ -1,0 +1,38 @@
+#!/bin/zsh -f
+# Queries the Github API to retrieve repository metadata
+# Returns raw JSON
+
+# Personal autoload function
+# Used to ensure Github credentials are available in env vars
+autoload passenv
+
+local -A URLS=(
+    [base]="https://github.com"
+    [api]="https://api.github.com/repos"
+    [raw]="https://raw.githubusercontent.com"
+)
+
+export GITHUB_USERNAME=${GITHUB_USERNAME:-csu/tokens/github:username}
+export GITHUB_TOKEN=${GITHUB_TOKEN:-csu/tokens/github}
+passenv GITHUB_USERNAME GITHUB_TOKEN
+
+local -a curl_opts=(
+    --silent
+    -H 'Accept: application/vnd.github.preview'
+    -w "%{http_code}"
+    -u "${GH_PAT}"
+)
+local stem url 
+local -i http_ret
+local -A errors=( )
+
+while [[ $# -gt 0 ]]; do
+    stem="${1#${URLS[base]}/}"
+    url="${URLS[api]}/${stem}"
+    http_ret="$(curl $curl_opts $url)"
+    if [[ $http_ret -lt 200 || $http_ret -gt 299 ]]; then
+        errors[$1]=$http_ret
+    fi
+    shift
+done
+if 

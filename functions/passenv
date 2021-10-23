@@ -1,0 +1,36 @@
+#!/bin/zsh -f
+# Assigns credential stored by \`pass\` to environment variable
+# Input:
+#   - Name of environment variable
+#       - Location of desired credential should be assigned to this variable
+#       prior to calling this function
+#       - Format: [path/to/cred/file]:[YAML property names]
+#       - If assigned value isn't found by \`pass\`, it's assumed that the
+#       correct password is already assigned
+# Examples:
+#   export TEST=personal/test:prop
+#   passenv TEST
+#   # If the line "prop: val" is included in the file $PASS_DIR/personal/test,
+#   # then this will assign the string "val" to variable TEST
+
+while [[ $# -gt 0 ]]; do
+    local name=$1
+    if [[ -z ${(P)name+1} ]]; then
+        print "Environment variable $name is not assigned." >&2
+        return 1
+    fi
+
+    local fname=${(P)name%%:*} fields=${(P)name#*:}
+
+    if [[ ! -f "${PASS_DIR}/${fname}.gpg" ]]; then
+        return 0
+    else
+        if [[ "$fname" == "${(P)name}" ]]; then
+            export ${name}="$(pass show "$fname" | head -1)"
+        else
+            export ${name}="$(pass show "$fname" |
+                sed '1d' | yq -r ".${fields:s/:/./}")"
+        fi
+    fi
+    shift
+done

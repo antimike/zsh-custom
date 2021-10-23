@@ -1,0 +1,16 @@
+#!/bin/zsh -f
+# Gets list of functions defined in file
+# Input:
+#   \$1         --> Name of file to search
+#   \${@:2:}    --> Names of functions to search for
+
+local -i ret=0
+local file="$1" && shift
+while true; do
+    local fn_re="${1:-[a-zA-Z_]\+}()"  # Regex to search for
+    grep -o "^_${fn_re}" "$file" | 
+        sed 's/^_//' |
+        grep -v '^_' || let ret+=1
+    shift && [ $# -gt 0 ] || break
+done
+return $ret

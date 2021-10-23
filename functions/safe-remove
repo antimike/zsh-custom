@@ -1,0 +1,8 @@
+#!/bin/zsh
+# Safely remove external media
+# See https://unix.stackexchange.com/questions/178638/eject-safely-remove-vs-umount
+# Probably deprecated by `eject`
+
+local device=$1
+udiskctl unmount -b $device
+udiskctl power-off -b $device
