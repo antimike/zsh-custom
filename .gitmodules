@@ -1,0 +1,15 @@
+[submodule "dotbare"]
+	path = dotbare
+	url = ./plugins/dotbare
+[submodule "plugins/dotbare"]
+	path = plugins/dotbare
+	url = https://github.com/kazhala/dotbare.git
+[submodule "plugins/git-annex"]
+	path = plugins/git-annex
+	url = https://github.com/Schnouki/git-annex-zsh-completion.git
+[submodule "plugins/zsh-syntax-highlighting"]
+	path = plugins/zsh-syntax-highlighting
+	url = https://github.com/zsh-users/zsh-syntax-highlighting.git
+[submodule "plugins/zsh-vi-mode"]
+	path = plugins/zsh-vi-mode
+	url = https://github.com/jeffreytse/zsh-vi-mode
