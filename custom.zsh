@@ -5,15 +5,16 @@
 # The :h modifier prints the parent directory ("head")
 SCRIPTDIR="${${(%):-%x}:h}/zshrc.d"
 
-prune_git_opts() {
+_prune() {
+    # Ignores contents of .git/ and dev/
     local -a opts=(
-        -name ".git" -prune 
+        -name ".git" -o -name "dev" -prune 
         -o \( $@ \) -print
     )
     echo $opts
 }
 
 if [[ -d $SCRIPTDIR ]]; then
-    source $(find $SCRIPTDIR `prune_git_opts -type f -name "*.zsh"`)
-    autoload $(find $SCRIPTDIR `prune_git_opts -path "*/functions/*" -type f`)
+    source $(find $SCRIPTDIR `_prune -type f -name "*.zsh"`)
+    autoload $(find $SCRIPTDIR `_prune -path "*/functions/*" -type f`)
 fi
