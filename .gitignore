@@ -1,3 +1,4 @@
 *.vim
 example.zsh*
 example
+test*
