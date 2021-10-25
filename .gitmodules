@@ -19,3 +19,6 @@
 [submodule "themes/spaceship-prompt"]
 	path = themes/spaceship-prompt
 	url = https://github.com/spaceship-prompt/spaceship-prompt.git
+[submodule "plugins/zsh-completion-generator"]
+	path = plugins/zsh-completion-generator
+	url = git@github.com:antimike/zsh-completion-generator
