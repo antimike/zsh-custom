@@ -4,37 +4,26 @@
 # ${(%):-%x} is the zsh equivalent of ${BASH_SOURCE[0]}
 # The :h modifier prints the parent directory ("head")
 export SCRIPTDIR="${${(%):-%x}:h}"
-export SCRIPT_INIT="${SCRIPTDIR}/init.zsh"
 
-# Each "functions" dir must be added separately to fpath
-# The (:a) qualifier ensures the absolute path is printed
-fpath+=( $SCRIPTDIR/**/functions(:a) )
-fpath+=( $SCRIPTDIR/**/completion(:a) )
+() {
+    setopt EXTENDEDGLOB GLOBSTARSHORT
+    local ignored_dirs=(
+        .git
+        dev
+        themes
+        plugins
+    )
 
-ignored=(
-    "${${(%):-%x}:t}"     # This file
-    .git
-    dev
-    themes
-    plugins
-)
-opts=( "-o -name" )
+    # Ensure that this file is not sourced again
+    local ignored="$SCRIPTDIR/(${(j:|:)ignored_dirs})/***"
+    #print -- ${~ignored}
 
-if [[ ! -e $SCRIPT_INIT || $SCRIPT_INIT -ot .git ]]; then
-    find $SCRIPTDIR \
-        \( -false ${=opts::=${opts:^^ignored}} \) -prune \
-        -o \( -type f -name "*.zsh" \) \
-        -fprintf "$SCRIPT_INIT" 'source "%p"; \n' \
-        -o \( -type f -path "*/functions/*" \) \
-        -fprintf "$SCRIPT_INIT" 'autoload "%f"; \n'
-    () (
-        cd $SCRIPTDIR
-        grep -q $SCRIPT_INIT .gitignore ||
-            print -- ${SCRIPT_INIT}(:t) >>.gitignore
-        git add .gitignore &&
-            git commit -q -o .gitignore -m "Added rule for init script" \
-                -m "Init script is dynamically produced as-needed by custom.zsh"
-    ) 2>/dev/null
-fi
+    # Add each "functions" and "completion" dir to fpath
+    fpath+=( $SCRIPTDIR/**/functions~${~ignored}(/) )
+    fpath+=( $SCRIPTDIR/**/completion~${~ignored}(/) )
 
-source $SCRIPT_INIT
+    for file in $SCRIPTDIR/**/*.zsh~${~ignored}~${(%):-%x}(.:A); do
+        source -- $file
+    done
+    autoload -- $SCRIPTDIR/**/functions/*~${~ignored}~*.zsh(.:t)
+}
