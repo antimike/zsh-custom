@@ -3,18 +3,38 @@
 
 # ${(%):-%x} is the zsh equivalent of ${BASH_SOURCE[0]}
 # The :h modifier prints the parent directory ("head")
-SCRIPTDIR="${${(%):-%x}:h}/zshrc.d"
+export SCRIPTDIR="${${(%):-%x}:h}"
+export SCRIPT_INIT="${SCRIPTDIR}/init.zsh"
 
-_prune() {
-    # Ignores contents of .git/ and dev/
-    local -a opts=(
-        -name ".git" -o -name "dev" -prune 
-        -o \( $@ \) -print
-    )
-    echo $opts
-}
+# Each "functions" dir must be added separately to fpath
+# The (:a) qualifier ensures the absolute path is printed
+fpath+=( $SCRIPTDIR/**/functions(:a) )
+fpath+=( $SCRIPTDIR/**/completion(:a) )
 
-if [[ -d $SCRIPTDIR ]]; then
-    source $(find $SCRIPTDIR `_prune -type f -name "*.zsh"`)
-    autoload $(find $SCRIPTDIR `_prune -path "*/functions/*" -type f`)
+ignored=(
+    "${${(%):-%x}:t}"     # This file
+    .git
+    dev
+    themes
+    plugins
+)
+opts=( "-o -name" )
+
+if [[ ! -e $SCRIPT_INIT || $SCRIPT_INIT -ot .git ]]; then
+    find $SCRIPTDIR \
+        \( -false ${=opts::=${opts:^^ignored}} \) -prune \
+        -o \( -type f -name "*.zsh" \) \
+        -fprintf "$SCRIPT_INIT" 'source "%p"; \n' \
+        -o \( -type f -path "*/functions/*" \) \
+        -fprintf "$SCRIPT_INIT" 'autoload "%f"; \n'
+    () (
+        cd $SCRIPTDIR
+        grep -q $SCRIPT_INIT .gitignore ||
+            print -- ${SCRIPT_INIT}(:t) >>.gitignore
+        git add .gitignore &&
+            git commit -q -o .gitignore -m "Added rule for init script" \
+                -m "Init script is dynamically produced as-needed by custom.zsh"
+    ) 2>/dev/null
 fi
+
+source $SCRIPT_INIT
