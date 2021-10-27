@@ -1,0 +1,4 @@
+#!/bin/zsh
+# Restarts NetworkManager
+
+sudo systemctl restart NetworkManager

@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/zsh -f
 # Simple functions to echo text into a TODO file with a name determined by the
 # first positional parameter (e.g., `to watch "Memento"` results in the string
 # "- [ ] Memento" being appended to the file "towatch.txt" in the designated
