@@ -22,7 +22,7 @@ local -a curl_opts=(
     -w "%{http_code}"
     -u "${GH_PAT}"
 )
-local stem url 
+local stem url
 local -i http_ret
 local -A errors=( )
 
@@ -35,4 +35,9 @@ while [[ $# -gt 0 ]]; do
     fi
     shift
 done
-if 
+
+if [[ $#errors -gt 0 ]]; then
+    print "Errors:"
+    printf '%s %s\n' ${(kv)errors} | column -t
+fi >&2
+return $#errors
