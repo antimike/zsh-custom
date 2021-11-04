@@ -1,0 +1,10 @@
+#!/bin/zsh -f
+# Parses JSON from stdin using \`gron\` and assigns shell variables accordingly
+# Opts: TODO: Add options for different delimiter styles
+
+gron | sed 's/^json\.//' | 
+    grep -v '= {}' | grep -v '= \[\]' |
+    sed 's/\([^ ]\+\)\.\([^ ]\+\)/\1{\2}/' | 
+    sed 's/ = /==/' | 
+    awk -v RS=';[[:space:]]*\n' -v ORS=', ' '{$0 = $0; print}' | 
+    sed 's/,[[:space:]]*$//'
