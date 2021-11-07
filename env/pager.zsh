@@ -41,6 +41,9 @@ set_by_preference() {
 } >/dev/null
 
 export LESS="-x4RFs"
+# To enable colored manpages
+# See https://github.com/ohmyzsh/ohmyzsh/issues/4543
+export GROFF_NO_SGR=1
 
 if [ -f "/usr/share/source-highlight/src-hilite-lesspipe.sh" ]; then
     # ubuntu 12.10: sudo apt-get install source-highlight
