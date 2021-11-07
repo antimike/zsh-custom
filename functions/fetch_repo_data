@@ -133,8 +133,9 @@ _metadata() {
 }
 
 
-if [[ $#errors -gt 0 ]]; then
-    print "Errors:"
-    printf '%s %s\n' ${(kv)errors} | column -t
-fi >&2
-return $#errors
+
+main() {
+    return $#errors
+}
+
+main $@
