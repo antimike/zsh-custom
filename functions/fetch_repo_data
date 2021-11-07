@@ -2,10 +2,46 @@
 # Queries the Github API to retrieve repository metadata
 # Returns raw JSON
 
+# IO stuff
+local __FILE__=${(%):-%x}
+local -A levels=(
+    [info]="${reset_color}"
+    [debug]="${fg_bold[yellow]}${bg[blue]}"
+    [success]="${fg_bold[green]}"
+    [warn]="${fg_bold[yellow]}"
+    [error]="${fg_bold[red]}"
+)
+
+__print() {
+    local color=$colors[$1]
+    local -i vb=$2
+    shift 2
+    (( vb >= verbosity )) && print -- "${color}$@${reset_color}"
+}
+__debug() {
+    __print debug 2 "DEBUG:${__NAME__}@${LINENO}: $@"
+}
+
+__inform() {
+    __print info 1 $@
+}
+
+__warn() {
+    __print warn 1 "WARNING: $@"
+}
+
+__error() {
+    __print error 0 "ERROR: $@"
+}
+
+__fail() {
+    __error ${@[2,-1]}
+    exit $1
+} >&2
+
 # Personal `pass` extension
 # Ensures that GH credentials are available as env variables
 eval $(pass env -q)
-local GH_PAT="${GITHUB_USER}:${GITHUB_TOKEN}"
 
 local -A URLS=(
     [base]="https://github.com"
