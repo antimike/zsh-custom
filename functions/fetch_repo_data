@@ -102,6 +102,13 @@ __get_cmd() {
     $cmd $@
 }
 
+__help() {
+    # Prints "docstring" of calling function
+    caller=${funcstack[-2]:-$funcstack[-1]}
+    sed -n "/^${caller}()/,/^[^#]/p" $__FILE__ |
+        sed "1c\\${caller#_}" | sed '$d' | sed 's/^#//'
+}
+
 _metadata() {
     local stem url
     local -i http_ret
