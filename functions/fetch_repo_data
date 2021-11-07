@@ -63,9 +63,34 @@ local -A URLS=(
 local -A fields=(
     [stars]="stargazers_count"
 )
-local stem url
-local -i http_ret
+
+local -a comments=() tags=() srcs=() yml_srcs=() attrs=()
+local cmd=
+local -i verbosity=1
 local -A errors=( )
+trap 'print -aC 2 -- ${(kv)errors} >&2' EXIT
+
+__parse_args() {
+    eval set -- $(getopt -o "c:t:a:yjY:J:F:hvVq" -l "comment:,tag:,attr:,yaml,json,from-json:,from-file:,help,quiet" -- $@)
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -c|--comment) comments+=( "$2" ); shift ;;
+            -t|--tag) tags+=( "$2" ); shift ;;
+            -a|--attr) attrs+=( "$2" ); shift ;;
+            -y|--yaml) yq_opts+=( -Y ) ;;
+            -j|--json) yq_opts=( ${yq_opts#-Y} ) ;;
+            -J|--from-json) yml_src+=( "$2" ); shift ;;
+            -F|--from-file) src+=( "$2" ); shift ;;
+            -h|--help) __help; exit 0 ;;
+            -v) let verbosity+=1 ;;
+            -V) let verbosity-=1 ;;
+            -q|--quiet) let verbosity=0 ;;
+            --) shift; break ;;
+            *) __fail "Unknown option '$1'" ;;
+        esac
+        shift
+    done
+}
 
 while [[ $# -gt 0 ]]; do
     stem="${1#${URLS[base]}/}"
