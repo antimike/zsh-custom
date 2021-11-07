@@ -66,12 +66,12 @@ local -A fields=(
 
 local -a comments=() tags=() srcs=() yml_srcs=() attrs=()
 local cmd=
-local -i verbosity=1
+local -i verbosity=1 http_ret
 local -A errors=( )
 trap 'print -aC 2 -- ${(kv)errors} >&2' EXIT
 
 __parse_args() {
-    eval set -- $(getopt -o "c:t:a:yjY:J:F:hvVq" -l "comment:,tag:,attr:,yaml,json,from-json:,from-file:,help,quiet" -- $@)
+    eval set -- $(getopt -o "c:t:a:yjY:J:F:hvVqs" -l "comment:,tag:,attr:,yaml,json,from-json:,from-file:,help,quiet,silent" -- $@)
     while [[ $# -gt 0 ]]; do
         case $1 in
             -c|--comment) comments+=( "$2" ); shift ;;
@@ -85,11 +85,13 @@ __parse_args() {
             -v) let verbosity+=1 ;;
             -V) let verbosity-=1 ;;
             -q|--quiet) let verbosity=0 ;;
+            -s|--silent) let verbosity=-1 ;;
             --) shift; break ;;
             *) __fail "Unknown option '$1'" ;;
         esac
         shift
     done
+    print $@
 }
 
 __get_cmd() {
@@ -99,7 +101,7 @@ __get_cmd() {
     fi
     shift
     fields[timestamps]="{(now|todate):\"${cmd#_} $@\"}"
-    $cmd $@
+    $cmd $(__parse_args $@)
 }
 
 __help() {
