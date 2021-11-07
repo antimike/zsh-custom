@@ -127,7 +127,7 @@ __api_request() {
 }
 
 __process_json() {
-    jq '
+    yq '
         to_entries |
             reduce .[] as $kv ([{},{}]; if ($kv|key|test("url")) then [.[0], .[1]+$kv] else [.[0]+$kv, .[1]] end) |
             map(from_entries) | .[0]+{"urls":.[1]}
@@ -145,7 +145,18 @@ _metadata() {
     done
 }
 
-
+_readme() {
+    local url
+    if [[ ! -t 0 ]]; then   # Process stdin as JSON
+        __debug "Processing stdin as JSON/YAML..."
+        url=$(__construct_url $URLS[raw] owner.login name default_branch README.md)
+    else
+        __debug "Obtaining metadata"
+        url=$(_metadata $@ | __construct_url $URLS[raw] owner.login name default_branch README.md)
+    fi
+    __debug "Constructed request URL: $url"
+    __api_request $url
+}
 
 main() {
     __run_cmd $@
