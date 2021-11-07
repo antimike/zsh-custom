@@ -19,7 +19,7 @@ __print() {
     (( vb >= verbosity )) && print -- "${color}$@${reset_color}"
 }
 __debug() {
-    __print debug 2 "DEBUG:${__NAME__}@${LINENO}: $@"
+    __print debug 2 "DEBUG:${__NAME__}:${funcstack[2]}@${LINENO}: $@"
 }
 
 __inform() {
