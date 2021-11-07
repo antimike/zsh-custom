@@ -43,21 +43,25 @@ __fail() {
 # Ensures that GH credentials are available as env variables
 eval $(pass env -q)
 
+local -a curl_opts=(
+    --silent
+    -H 'Accept: application/vnd.github.preview'
+    -w "%{stderr}%{http_code}"
+)
+if [[ -n "$GITHUB_USER" && -n "$GITHUB_TOKEN" ]]; then
+    curl_opts+=( -u "${GITHUB_USER}:${GH_TOKEN}" )
+else
+    print "Github token not found; using unauthenticated Github API" >&2
+fi
+
 local -A URLS=(
     [base]="https://github.com"
     [api]="https://api.github.com/repos"
     [raw]="https://raw.githubusercontent.com"
 )
 
-export GITHUB_USERNAME=${GITHUB_USERNAME:-csu/tokens/github:username}
-export GITHUB_TOKEN=${GITHUB_TOKEN:-csu/tokens/github}
-passenv GITHUB_USERNAME GITHUB_TOKEN
-
-local -a curl_opts=(
-    --silent
-    -H 'Accept: application/vnd.github.preview'
-    -w "%{http_code}"
-    -u "${GH_PAT}"
+local -A fields=(
+    [stars]="stargazers_count"
 )
 local stem url
 local -i http_ret
