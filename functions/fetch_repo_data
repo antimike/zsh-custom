@@ -2,9 +2,10 @@
 # Queries the Github API to retrieve repository metadata
 # Returns raw JSON
 
-# Personal autoload function
-# Used to ensure Github credentials are available in env vars
-autoload passenv
+# Personal `pass` extension
+# Ensures that GH credentials are available as env variables
+eval $(pass env -q)
+local GH_PAT="${GITHUB_USER}:${GITHUB_TOKEN}"
 
 local -A URLS=(
     [base]="https://github.com"
