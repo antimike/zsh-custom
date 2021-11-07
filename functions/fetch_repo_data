@@ -109,6 +109,14 @@ __help() {
         sed "1c\\${caller#_}" | sed '$d' | sed 's/^#//'
 }
 
+__process_json() {
+    jq '
+        to_entries |
+            reduce .[] as $kv ([{},{}]; if ($kv|key|test("url")) then [.[0], .[1]+$kv] else [.[0]+$kv, .[1]] end) |
+            map(from_entries) | .[0]+{"urls":.[1]}
+        '
+}
+
 _metadata() {
     local stem url
     local -i http_ret
