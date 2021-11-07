@@ -1,0 +1,12 @@
+#!/bin/zsh -f
+# Flattens JSON into a series of shell-style variable assignments
+
+eval $(cat - "$@" | yq '.' | gron |
+    grep -v "= {}" |
+    sed -e 's/^json\.//' -e 's/;$//' |
+    awk -v FS=" = " -v OFS="=" '
+        {
+            $1=toupper(gensub(/\./,"_","g",$1))
+            print
+        }
+    ' | sed 's/^/export /')
