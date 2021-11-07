@@ -113,6 +113,19 @@ __help() {
         sed "1c\\${caller#_}" | sed '$d' | sed 's/^#//'
 }
 
+__construct_url() {
+    yq -r 'getpath($ARGS.positional|map(split(".")))|join("/")|@url' \
+        --args $@
+}
+
+__api_request() {
+    http_ret="$( {curl $curl_opts $1; } 2>&1 1>&3 3>&- )" 3>&1
+    __debug "HTTP request to $url returned status $http_ret"
+    if [[ $http_ret -lt 200 || $http_ret -gt 299 ]]; then
+        errors["$1"]=$http_ret
+    fi
+}
+
 __process_json() {
     jq '
         to_entries |
@@ -123,15 +136,11 @@ __process_json() {
 
 _metadata() {
     local stem url
-    local -i http_ret
-
     while [[ $# -gt 0 ]]; do
+        __debug "Getting metadata for $1..."
         stem="${1#${URLS[base]}/}"
         url="${URLS[api]}/${stem}"
-        http_ret="$( {curl $curl_opts $url; } 2>&1 1>&3 3>&- )" 3>&1
-        if [[ $http_ret -lt 200 || $http_ret -gt 299 ]]; then
-            errors[$1]=$http_ret
-        fi
+        __api_request $url
         shift
     done
 }
