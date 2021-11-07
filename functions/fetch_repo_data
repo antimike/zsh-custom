@@ -94,8 +94,10 @@ __parse_args() {
     print $@
 }
 
-__get_cmd() {
-    if [[ -z ${cmd:=${:-(grep -m1 -so "^_${1}.*()" $__FILE__)}%()} ]]
+__run_cmd() {
+    if [[ $# -eq 0 || -z $1 ]]; then
+        __fail 2 "You must provide a subcommand"
+    elif [[ -z ${cmd:=${:-(grep -m1 -so "^_${1}.*()" $__FILE__)}%()} ]]
     then
         __fail 1 "Subcommand '$1' not implemented"
     fi
@@ -137,6 +139,7 @@ _metadata() {
 
 
 main() {
+    __run_cmd $@
     return $#errors
 }
 
