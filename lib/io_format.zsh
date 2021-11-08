@@ -22,7 +22,7 @@ io_format() {
     local -i vb=${inform_verbosity[$1]} st=$?
     local cl=${inform_color[$1]}
     shift
-    (( vb <= verbosity )) && print -- "${cl}${@}${reset_color}"
+    (( vb <= verbosity )) && print -u 2 -- "${cl}${@}${reset_color}"
     return $st
 }
 
