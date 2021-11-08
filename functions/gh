@@ -18,7 +18,7 @@ local -a curl_opts=(
 if [[ -n "$GITHUB_USER" && -n "$GITHUB_TOKEN" ]]; then
     curl_opts+=( -u "${GITHUB_USER}:${GH_TOKEN}" )
 else
-    print "Github token not found; using unauthenticated Github API" >&2
+    warn "Github token not found; using unauthenticated Github API" >&2
 fi
 
 local -A URLS=(
