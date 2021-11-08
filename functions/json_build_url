@@ -1,0 +1,20 @@
+#!/bin/zsh -f
+# Builds a URL out of properties selected from JSON (passed via stdin) using JQ
+
+. $ZSH_CUSTOM/lib/io_format.zsh
+local prefix= suffix=
+eval set -- $(getopt -o "p:s:" -l "prefix:,suffix:" -- $@)
+debug $@ >&2
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -p|--prefix) prefix="$2"; shift ;;
+        -s|--suffix) suffix="$2"; shift ;;
+        --) shift; break ;;
+        *) print "Unknown opt '$1'" >&2; return -1 ;;
+    esac
+    shift
+done
+yq -r '([$prefix] + [getpath($ARGS.positional|map(split(".")|map(@uri))|.[])] + [$suffix])|join("/")' \
+    --arg prefix "$prefix" \
+    --arg suffix "$suffix" \
+    --args $@
