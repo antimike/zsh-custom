@@ -12,6 +12,7 @@ export SCRIPTDIR="${${(%):-%x}:h}"
         dev
         themes
         plugins
+        lib
     )
 
     # Ensure that this file is not sourced again
