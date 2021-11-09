@@ -1,0 +1,20 @@
+#!/bin/zsh -f
+# Adds properties to a JSON / YAML object, piped through stdin
+# Accepts properties to add as either "key=value"-style parameters or as
+# associative arrays
+
+. $ZSH_CUSTOM/lib/io_format.zsh
+autoload needs jadd
+zmodload zsh/zutil
+
+zparseopts -D -E -A opts -- o+: -opts+:
+
+needs yq
+
+if [[ ! -t 0 ]]; then
+    # Process stdin as JSON/YAML
+    debug "$(jfrom -c $@)"
+    yq -${^opts} '.+$params' --argjson params "$(jfrom -c $@)"
+else
+    jfrom $@
+fi
