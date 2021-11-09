@@ -1,0 +1,13 @@
+#!/bin/zsh -f
+# Checks dependencies
+
+local -a missing=( )
+while [ $# -gt 0 ]; do
+    command -v "$1" || missing+=( "$1" )
+    shift
+done >/dev/null 2>&1
+if [ ${#missing[@]} -gt 0 ]; then
+    echo "Please ensure the following are installed:"
+    print -l -- "  - "${^missing}
+    return ${#missing[@]}
+fi >&2
