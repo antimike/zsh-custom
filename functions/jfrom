@@ -1,0 +1,21 @@
+#!/bin/zsh -f
+# Wrapper around rjo that recursively expands variable names
+
+. $ZSH_CUSTOM/lib/io_format.zsh
+autoload jexpandargs needs
+
+needs getopts yq
+
+local -a opts=(-n)
+local -i arr=0
+
+while getopts ":a" opt; do
+    case $opt in
+        a) let arr+=1 ;;
+        *) opts+=(-$OPTARG) ;;
+    esac
+done
+shift $(( OPTIND - 1 ))
+
+debug $(declare -p opts)
+yq $opts '$ARGS.positional|add' --jsonargs ${(pl:$arr::[:)""}${^${(f)"$(jexpandargs $@)"}}${(pr:$arr::]:)""}
