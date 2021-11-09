@@ -1,0 +1,21 @@
+#!/bin/zsh -f
+# Expands a list of arguments recursively into JSON using rjo
+
+autoload needs
+needs rjo
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        *=*)
+            local name=${1%%=*} val=${1#*=}
+            print -- $(rjo -- "$name=$(jexpandargs $val)") ;;
+        *)
+            case ${(tP)1} in
+                scalar) print -- ${(Pqqq)1}; return 0 ;;
+                array) print -- $(rjo -a -- ${(P)1}); return 0 ;;
+                association) print -- $(rjo -- ${(Q)${(z)"$(printf '%s=%s ' ${(Pkvq+)1})"}}) ;;
+                *) print -- ${(qqq)1} ;;
+            esac
+    esac
+    shift
+done
