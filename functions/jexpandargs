@@ -14,9 +14,8 @@ zparseopts -D -E -- N+:=named -with-name+:=named
 debug $(declare -p 1 named)
 
 # For a named arg "param", pass "param=param" into the loop
-for arg ($@ ${${(AA)named::=$named}/#%(#m)*/${MATCH}=${MATCH}}); do
+for arg (${@:#--} ${${(AA)named::=$named}/#%(#m)*/${MATCH}=${MATCH}}); do
     case $arg in
-        --) continue ;; # See zshmodules/zparseopts manpage on the -D and -E opts
         *=*)
             local name=${arg%%=*} val=${arg#*=}
             print -- $(rjo -- "$name=$(jexpandargs $val)") ;;
