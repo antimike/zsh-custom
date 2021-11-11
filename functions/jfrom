@@ -3,11 +3,11 @@
 
 . $ZSH_CUSTOM/lib/io_format.zsh
 autoload jexpandargs needs
-
 needs getopts yq
 
-local -a opts=(-n)
-local -i arr=0
+local -a yq_opts=() exp_opts=() from_opts=()
+zparseopts -D -E -- N+:=exp_opts -with-name+:=exp_opts a+=from_opts -array+=from_opts o+:=yq_opts
+local -i arr=${#${(M)from_opts:#(-a|--array)}}
 
 while getopts ":a" opt; do
     case $opt in
@@ -17,5 +17,5 @@ while getopts ":a" opt; do
 done
 shift $(( OPTIND - 1 ))
 
-debug $(declare -p opts)
-yq $opts '$ARGS.positional|add' --jsonargs ${(pl:$arr::[:)""}${^${(f)"$(jexpandargs $@)"}}${(pr:$arr::]:)""}
+debug $(declare -p 1 yq_opts exp_opts from_opts)
+yq -n ${yq_opts:#-o} '$ARGS.positional|add' --jsonargs ${(pl:$arr::[:)""}${^${(f)"$(jexpandargs $exp_opts -- $@)"}}${(pr:$arr::]:)""}
