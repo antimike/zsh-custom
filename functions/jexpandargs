@@ -1,13 +1,23 @@
 #!/bin/zsh -f
 # Expands a list of arguments recursively into JSON using rjo
+# Named args can be specified with -N.  For example, if arr=(1 2 3), then
+# jexpandargs -N arr will result in arr=[1, 2, 3].
 
+. $ZSH_CUSTOM/lib/io_format.zsh
+zmodload zsh/zutil
 autoload needs
 needs rjo
 
-while [[ $# -gt 0 ]]; do
-    case $1 in
+local -a named
+zparseopts -D -E -- N+:=named -with-name+:=named
+debug $(declare -p 1 named)
+
+# For a named arg "param", pass "param=param" into the loop
+for arg ($@ ${${(AA)named::=$named}/#%(#m)*/${MATCH}=${MATCH}}); do
+    case $arg in
+        --) continue ;; # See zshmodules/zparseopts manpage on the -D and -E opts
         *=*)
-            local name=${1%%=*} val=${1#*=}
+            local name=${arg%%=*} val=${arg#*=}
             print -- $(rjo -- "$name=$(jexpandargs $val)") ;;
         *)
             case ${(tP)1} in
@@ -18,5 +28,4 @@ while [[ $# -gt 0 ]]; do
                 *) print -- ${(qqq)1} ;;
             esac
     esac
-    shift
 done
