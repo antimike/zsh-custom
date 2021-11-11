@@ -4,6 +4,7 @@
 # jexpandargs -N arr will result in arr=[1, 2, 3].
 
 . $ZSH_CUSTOM/lib/io_format.zsh
+setopt extendedglob
 zmodload zsh/zutil
 autoload needs
 needs rjo
