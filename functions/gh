@@ -3,7 +3,7 @@
 # Returns raw JSON
 
 . $ZSH_CUSTOM/lib/io_format.zsh
-autoload docstring json_build_url
+autoload docstring json_build_url needs jfrom jadd
 local __FILE__=${(%):-%x}
 
 # Personal `pass` extension
@@ -58,8 +58,8 @@ gh_process_json() {
     yq '
         to_entries |
             reduce .[] as $kv ([{},{}]; if ($kv|key|test("url")) then [.[0], .[1]+$kv] else [.[0]+$kv, .[1]] end) |
-            map(from_entries) | .[0]+{"urls":.[1]}
-        '
+            map(from_entries) | .[0]+{"urls":.[1]}+$other_attrs
+                    ' --argjson other_attrs $(jfrom -n comments tags | jadd attrs)
 }
 
 gh_metadata() {
