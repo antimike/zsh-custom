@@ -18,13 +18,13 @@ for arg (${@:#--} ${${(AA)named::=$named}/#%(#m)*/${MATCH}=${MATCH}}); do
     case $arg in
         *=*)
             local name=${arg%%=*} val=${arg#*=}
-            print -- $(rjo -- "$name=$(jexpandargs $val)") ;;
+            rjo "$name=$(jexpandargs $val)" ;;
         *)
             case ${(tP)arg} in
                 integer|float) print -- ${(P)arg}; return 0 ;;
                 scalar) print -- ${(Pqqq)arg}; return 0 ;;
-                array) print -- $(rjo -a -- ${(P)arg}); return 0 ;;
-                association) print -- $(rjo -- ${(Q)${(z)"$(printf '%s=%s ' ${(Pkvq+)arg})"}}) ;;
+                array) rjo -a -- ${(P)arg}; return 0 ;;
+                association) jexpandargs -- ${(Q)${(z)"$(printf '%s=%s ' ${(Pkvq+)arg})"}} ;;
                 *) print -- ${(qqq)arg} ;;
             esac
     esac
