@@ -20,6 +20,7 @@ for arg (${@:#--} ${${(AA)named::=$named}/#%(#m)*/${MATCH}=${MATCH}}); do
             local name=${arg%%=*} val=${arg#*=}
             rjo -- "$name=$(jfrom -- $val)" ;;
         *)
+            debug $(declare -p 1 arg); debug ${(tP)arg}
             case ${(tP)arg} in
                 integer|float) print -- ${(P)arg}; return 0 ;;
                 scalar) print -- ${(Pqqq)arg}; return 0 ;;
