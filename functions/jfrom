@@ -10,4 +10,4 @@ zparseopts -D -E -- N+:=exp_opts -with-name+:=exp_opts a+=from_opts -array+=from
 local -i arr=${#${(M)from_opts:#(-a|--array)}}
 
 debug $(declare -p 1 yq_opts exp_opts from_opts)
-yq -n ${yq_opts:#-o} '$ARGS.positional|add' --jsonargs ${(pl:$arr::[:)""}${^${(f)"$(jexpandargs $exp_opts -- $@)"}}${(pr:$arr::]:)""}
+yq -n -${^yq_opts:#-o} '$ARGS.positional|add' --jsonargs ${(pl:$arr::[:)""}${^${(f)"$(jexpandargs $exp_opts -- $@)"}}${(pr:$arr::]:)""}
