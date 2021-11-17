@@ -6,7 +6,7 @@
 . $ZSH_CUSTOM/lib/io_format.zsh
 setopt localoptions extendedglob
 zmodload zsh/zutil
-autoload needs
+autoload needs jfrom
 needs rjo
 
 local -a named
@@ -18,13 +18,13 @@ for arg (${@:#--} ${${(AA)named::=$named}/#%(#m)*/${MATCH}=${MATCH}}); do
     case $arg in
         *=*)
             local name=${arg%%=*} val=${arg#*=}
-            rjo "$name=$(jexpandargs $val)" ;;
+            rjo -- "$name=$(jfrom -- $val)" ;;
         *)
             case ${(tP)arg} in
                 integer|float) print -- ${(P)arg}; return 0 ;;
                 scalar) print -- ${(Pqqq)arg}; return 0 ;;
                 array) rjo -a -- ${(P)arg}; return 0 ;;
-                association) jexpandargs -- ${(Q)${(z)"$(printf '%s=%s ' ${(Pkvq+)arg})"}} ;;
+                association) jexpandargs -- $(printf '%s=%s ' ${(Pkvq+)arg}) ;;
                 *) print -- ${(qqq)arg} ;;
             esac
     esac
