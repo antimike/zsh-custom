@@ -1,4 +1,4 @@
-#!/bin/zsh -f
+#!/bin/zsh
 # Basic IO convenience functions
 
 autoload colors
