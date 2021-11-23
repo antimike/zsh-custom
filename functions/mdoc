@@ -1,0 +1,25 @@
+#!/bin/zsh -f
+# Converts structured text to markdown
+
+jq -r '
+def sgn($num):
+    if $num == 0 then 0 else ($num|fabs)/$num end;
+def nest($env):
+    if sgn($env) != sgn(.) then -1 else . + sgn($env) end;
+def text($level):
+    (if $level < 0 then ($level|fabs - 1)*"    " + "* " else "" end)
+        + tostring;
+def header($level):
+    (if $level > 0 then $level*"#" + " " else "" end) + text($level);
+def print_md($level):
+    ($level|nest($level)) as $nl |
+    if type == "array" then
+        map(print_md($nl))
+    elif type == "object" then
+        to_entries |
+            map([(.key|header($nl)), (.value|print_md($nl))]) | add
+    else
+        text($level)
+    end;
+print_md(0) | join("\n")
+'
