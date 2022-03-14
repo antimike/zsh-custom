@@ -29,7 +29,11 @@ jexpand() {
     local __opts=(-R $@)
     if (( $# % 2 )); then   # Complete expansion: odd number of -R's
         debug Performing complete expansion of $param
-        jfrom $__opts -- $param
+        if [[ -n ${(tP)param} ]]; then
+            jfrom $__opts -- "$param"
+        else
+            print -- $param
+        fi
     elif [[ $param == *=* ]]; then
         debug Performing incomplete expansion of KV pair $param
         print -- ${param%%=*}=$(jexpand ${param#*=} $__opts)
