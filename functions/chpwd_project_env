@@ -1,0 +1,57 @@
+#!/bin/zsh -f
+# Sources any .env files in new dir and autoloads functions in zsh or .zsh dirs
+
+export PROJECT_ROOT=
+export -a project_fpath=()
+export -a project_functions=()
+
+_teardown_project() {
+    # Remove previous project's autoloads from fpath, call unfunction on each,
+    # and reset global state vars
+    if (( #project_fpath > 0 )); then
+        export fpath=(${fpath:|project_fpath})
+    fi
+    for fn in $project_functions; do
+        unfunction $fn >/dev/null 2>&1
+    done
+    export project_fpath=()
+    export project_functions=()
+    # TODO: Find way of "unsourcing" .zsh files
+}
+
+_get_project_root() {
+    # Define PROJECT_ROOT as root of git repo
+    git rev-parse --show-toplevel 2>/dev/null
+}
+
+_setup_project() {
+    setopt localoptions NULL_GLOB
+    # Find autoload functions and script files under PROJECT_ROOT and handle
+    if [[ -n $PROJECT_ROOT ]]; then
+        # Find autoload dirs under PROJECT_ROOT
+        export project_fpath=($PROJECT_ROOT/(.)#(zsh|env|proj)(/))
+        fpath+=($project_fpath)
+        # Don't autoload if file ends in .zsh
+        export project_functions=(${^project_fpath}/**/*~*.zsh(.:t))
+        if (( #project_functions > 0 )); then
+            autoload -- $project_functions
+        fi
+        # TODO: Source plain script files (.zsh)
+    fi
+}
+
+chpwd_project_env() {
+    # Cases:
+    # 1. $PROJECT_ROOT empty: In this case, teardown and setup should proceed
+    # normally
+    # 2. $PROJECT_ROOT nonempty, $PWD under $PROJECT_ROOT: no-op
+    # 3. $PROJECT_ROOT nonempty, $PWD not under $PROJECT_ROOT: teardown and
+    # setup
+    if [[ -z $PROJECT_ROOT || ! $PWD == $PROJECT_ROOT/* ]]; then
+        _teardown_project
+        export PROJECT_ROOT=$(_get_project_root)
+        _setup_project
+    fi
+}
+
+chpwd_project_env $@
