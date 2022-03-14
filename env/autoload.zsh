@@ -1,3 +1,3 @@
 #!/bin/zsh
 
-autoload zed
+autoload zed sticky-note
