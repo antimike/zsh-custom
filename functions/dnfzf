@@ -1,0 +1,30 @@
+#!/bin/zsh -f
+# FZF-based frontent to DNF
+
+export FZF_PREVIEW_CACHE=${FZF_PREVIEW_CACHE:-~/.cache/fzf-previews}
+export -i FZF_PREVIEW_MAX_JOBS=${FZF_PREVIEW_MAX_JOBS:-10}
+
+# DNF commands to search and get package info
+# Use -C to run entirely from cache (prevents lag)
+local -a dnfzf_info=(dnf info -C --)
+local -a dnfzf_search=(dnf search -C --)
+
+local -r dnfzf_fifo="$(mktemp --dry-run --suffix "fzf-$$-dnf")"
+
+# TODO: Use GNU parallel or xargs
+cache_dnf_info() {
+    # Limit to max 10 concurrent jobs
+    integer j=0
+    while IFS= read -r pkg; do
+        if ((j++ > FZF_PREVIEW_MAX_JOBS)) { j = 0; wait; }
+        dnf info -C -- $pkg 2>/dev/null &
+    done
+}
+
+# Adapted from ueberzug-fzfimage
+start_dnfzf() {
+    mkfifo "${dnfzf_fifo}"
+    cache_dnf_info <"$dnfzf_fifo"
+    # prevent EOF
+    exec 3>"$dnfzf_fifo"
+}
