@@ -27,8 +27,4 @@ export SCRIPTDIR="${${(%):-%x}:h}"
         source -- $file
     done
     autoload -- $SCRIPTDIR/**/functions/*~${~ignored}~*.zsh(.:t)
-
-    # Hooks
-    # TODO: Do this more systematically
-    chpwd_functions+=(chpwd_project_env)
 }
