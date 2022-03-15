@@ -1,30 +1,82 @@
 #!/bin/zsh -f
 # FZF-based frontent to DNF
 
+export FZF_PREVIEWER=${FZF_PREVIEWER:-pistol}
 export FZF_PREVIEW_CACHE=${FZF_PREVIEW_CACHE:-~/.cache/fzf-previews}
-export -i FZF_PREVIEW_MAX_JOBS=${FZF_PREVIEW_MAX_JOBS:-10}
 
-# DNF commands to search and get package info
-# Use -C to run entirely from cache (prevents lag)
-local -a dnfzf_info=(dnf info -C --)
-local -a dnfzf_search=(dnf search -C --)
+_dnfzf_finalize() {
+    # exec 3>&-
+    rm -rf "$dnfzf_lockdir" 2>&1 >/dev/null
+    kill $(jobs -p) >/dev/null 2>&1
+    # Any reason not to use `pkill -P $$`?
+} >/dev/null 2>&1
 
-local -r dnfzf_fifo="$(mktemp --dry-run --suffix "fzf-$$-dnf")"
+_dnfzf_get_preview() {
+    cat <<-PREVIEW
+        # Generate FZF preview for {1}
+        local preview=${FZF_PREVIEW_CACHE}/{1}
+        if [[ ! -e \$preview ]]; then
+            local fifo=\${dnfzf_lockdir}/{1}
+            mkfifo \$fifo
+            { >\$fifo dnf info -C -- {1} } &
+            <\$fifo tee \$preview
+        fi
+        wait
+        $FZF_PREVIEWER \$preview
 
-# TODO: Use GNU parallel or xargs
-cache_dnf_info() {
-    # Limit to max 10 concurrent jobs
-    integer j=0
-    while IFS= read -r pkg; do
-        if ((j++ > FZF_PREVIEW_MAX_JOBS)) { j = 0; wait; }
-        dnf info -C -- $pkg 2>/dev/null &
-    done
+	PREVIEW
 }
 
-# Adapted from ueberzug-fzfimage
-start_dnfzf() {
-    mkfifo "${dnfzf_fifo}"
-    cache_dnf_info <"$dnfzf_fifo"
-    # prevent EOF
-    exec 3>"$dnfzf_fifo"
+dnfzf() {
+    local -rx dnfzf_lockdir="$(mktemp -d --suffix "fzf-$$-dnf-lockdir")"
+    local -r logfile=$FZF_PREVIEW_CACHE/.log/dnfzf-$(date +%s)-$$.zsh
+    local -r redraw_key="µ"
+    local -r redraw_command="execute-silent(rm ${FZF_PREVIEW_CACHE}/{1})+refresh-preview"
+    local -A binds=(
+        [enter]="accept"
+        [ctrl-r]="$redraw_command"
+        [ctrl-d]="half-page-down"
+        [ctrl-u]="half-page-up"
+        [ctrl-g]="first"
+        [ctrl-b]="last"
+        [ctrl-alt-d]="preview-half-page-down"
+        [ctrl-alt-u]="preview-half-page-up"
+        [ctrl-alt-n]="preview-down"
+        [ctrl-alt-p]="preview-up"
+        [ctrl-alt-j]="preview-down"
+        [ctrl-alt-k]="preview-up"
+        [ctrl-alt-g]="preview-top"
+        [ctrl-alt-b]="preview-bottom"
+        [$redraw_key]="$redraw_command"
+    )
+    local bindstring=`printf '%s:%s,' ${(kv)binds} | sed 's/,$//'`
+
+    trap _dnfzf_finalize EXIT SIGINT
+
+    # Taken from ueberzug-fzfimg
+    () {
+        # print "$@" to stdin on receiving SIGWINCH
+        # use exec as we will only kill direct childs on exiting,
+        # also the additional bash process isn't needed
+        </dev/tty \
+            exec perl -e '
+                require "sys/ioctl.ph";
+                while (1) {
+                    local $SIG{WINCH} = sub {
+                        ioctl(STDIN, &TIOCSTI, $_) for split "", join " ", @ARGV;
+                    };
+                    sleep;
+                }' \
+                "${redraw_key}${redraw_key}" &
+    } >/dev/null 2>&1
+
+    dnf -C list |
+        fzf --ansi \
+            --cycle \
+            --header-lines=2 \
+            --preview "$(_dnfzf_get_preview)" \
+            --preview-window wrap \
+            --bind "$bindstring"
 }
+
+dnfzf
