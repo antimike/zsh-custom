@@ -28,7 +28,8 @@ _dnfzf_get_preview() {
 }
 
 dnfzf() {
-    local -rx dnfzf_lockdir="$(mktemp -d --suffix "fzf-$$-dnf-lockdir")"
+    local -rx dnfzf_fifo="$(mktemp --dry-run --suffix "dnfzf-$$")"
+    local -rx dnfzf_lockdir="$(mktemp -d --suffix "dnfzf-lockdir-$$")"
     local -r logfile=$FZF_PREVIEW_CACHE/.log/dnfzf-$(date +%s)-$$.zsh
     local -r redraw_key="µ"
     local -r redraw_command="execute-silent(rm ${FZF_PREVIEW_CACHE}/{1})+refresh-preview"
@@ -79,4 +80,4 @@ dnfzf() {
             --bind "$bindstring"
 }
 
-dnfzf
+dnfzf $@
