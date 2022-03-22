@@ -2,12 +2,14 @@
 # Graphical fuzzy selector for use in personal scripts
 
 _select_fzf() {
-    local -a opts=( )
+    local -a opts=(
+
+)
     fzf $opts
 }
 
 _select_rofi() {
-    local -a opts=( 
+    local -a opts=(
         -dpi
         -keep-right
         -dmenu

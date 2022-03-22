@@ -1,0 +1,7 @@
+#!/bin/zsh -f
+# Function to automate caching helptext as a manpage in the custom mansection "1h"
+
+zmodload zsh/zutil
+
+zparseopts -D -E -A opts -- h: -v:
+
