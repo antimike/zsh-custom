@@ -14,7 +14,7 @@ KNOWN_SSIDS_REGEX="`printf '\(%s\)' "$(nmcli -t -f "name" con |
 echo "${KNOWN_SSIDS_REGEX}" >>"${fzf_wifi_logfile:-/dev/null}"
 
 process_selection() {
-    local ssid="$(sed 's/^\(.*\)	.*$/\1/' <<< "$*")"
+    local ssid="$(sed 's/^\(.*\)  .*$/\1/' <<< "$*")"
     local known_ssid="$(expr "$*" : "${KNOWN_SSIDS_REGEX}")"
     if [[ -n "$known_ssid" ]]; then
         echo; printf '%s\n' \
@@ -36,11 +36,11 @@ fzf_select_wifi() {
     local nmcli_fields="SSID,SIGNAL,BARS,FREQ,IN-USE"
     local get_nmcli_table=
     read -r -d '' get_nmcli_table <<-NMCLI
-	nmcli -t -c yes -f "${nmcli_fields}" dev wifi list 2>/dev/null |
-	    sed "1i${nmcli_fields//,/:}" |
-	    sed 's/^\([^:]*\):/\1\t:/1' |
-	    column -t -s:
-	NMCLI
+  nmcli -t -c yes -f "${nmcli_fields}" dev wifi list 2>/dev/null |
+      sed "1i${nmcli_fields//,/:}" |
+      sed 's/^\([^:]*\):/\1\t:/1' |
+      column -t -s:
+  NMCLI
 
     # Stuff for the FZF display
     local header=`printf '%s\n' "<C-r>: View all networks" \
@@ -61,7 +61,7 @@ fzf_select_wifi() {
             --prompt="${prompt_all}" \
             --query="$*" \
             --cycle \
-            --inline-info \
+            --info=inline \
             --bind="enter:accept" \
             --bind="${bind_ctrlr}" \
             --bind="${bind_ctrlk}"
@@ -72,12 +72,12 @@ main() {
     # Infinite "refresh wifi list" loop in the background
     # This seems...suboptimal
     if (( rescan_delay < 1000 )); then
-	echo "Rescan delay must be at least 1000 ms" >&2
-	exit 23
+  echo "Rescan delay must be at least 1000 ms" >&2
+  exit 23
     fi
     while :; do
         nmcli dev wifi rescan >>"${fzf_wifi_logfile:-/dev/null}" 2>&1
-	sleep "$(bc <<<"scale=3; ${rescan_delay} / 1000")"
+  sleep "$(bc <<<"scale=3; ${rescan_delay} / 1000")"
     done &
     local loop_pid=$!
     trap "kill ${loop_pid} 2>>'${fzf_wifi_logfile:-/dev/null}'" \

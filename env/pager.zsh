@@ -21,7 +21,7 @@ declare -a CATS=(
 set_by_preference() {
     # exports a value to the env variable named in $1 after checking that it
     # corresponds to a valid command
-    # Params: 
+    # Params:
     #   Name of env variable to set
     #   A list of possible values, ordered by priority.  The first one which
     #   passes validation will be exported
@@ -40,7 +40,7 @@ set_by_preference() {
     set_by_preference CAT "${CATS[@]}"
 } >/dev/null
 
-export LESS="-x4RFs"
+export LESS="-x4Rs"
 # To enable colored manpages
 # See https://github.com/ohmyzsh/ohmyzsh/issues/4543
 export GROFF_NO_SGR=1

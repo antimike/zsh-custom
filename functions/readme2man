@@ -1,0 +1,33 @@
+#!/bin/zsh -f
+# Symlinks README.{md,rst,adoc,...} files to local man1r directory and converts it to roff markup, placing the results in man1r as well
+
+# Ensures options are local to this function and sets MULTIOS option
+emulate -L zsh
+setopt MULTIOS
+
+local logfile=~/.cache/readme2man.log
+touch $logfile && print -l "[`date -u` :: pwd: `pwd`]" $* >>$logfile
+local cmd=$1 readme=$2
+
+# Check that README file exists and cmd is a valid command
+if [[ ! -r $readme ]]; then
+        print "File '$readme' was not found or is not readable" >&2 >$logfile
+        return 1
+elif ! command -v $cmd >/dev/null; then
+        print "'$cmd' is not a valid command" >&2 >$logfile
+        return 2
+fi
+
+local target=~/.local/share/man/man1r/${cmd}.${readme:t}
+local dest=~/.local/share/man/man1r/${cmd}.1r
+local convert_cmd
+
+ln -s ${readme:P} $target || return 3
+
+case ${readme:e} in
+        md|markdown|mkdn) convert_cmd=md2man-roff ;;
+        rst) convert_cmd="rst2man -t -g --source-url=${readme} --warnings=${logfile}" ;;
+        adoc) convert_cmd="asciidoctor -b manpage -d manpage -" ;;
+esac
+
+$convert_cmd <$readme >$dest || print "Conversion failed" >&2 >$logfile

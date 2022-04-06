@@ -1,0 +1,198 @@
+actions:
+  complex:
+    change-preview:
+      description: "change --preview option"
+    change-preview-window:
+      description: "change --preview-window option; rotate through the multiple option sets separated by '|'"
+    change-prompt:
+      description: "change prompt to the given string"
+    execute:
+      description: "see below for the details"
+    execute-silent:
+      description: "see below for the details"
+    preview:
+      description: "see below for the details"
+      args: 'pistol {${FZF_FIELD:-}}'
+    reload:
+      description: "see below for the details"
+    unbind:
+      description: "unbind bindings"
+  simple:
+    abort:
+      keys:
+        - ctrl-c
+        - ctrl-g
+        - ctrl-q
+        - esc
+    accept:
+      keys:
+        - enter
+        - double-click
+    accept-non-empty:
+      description: "same as accept except that it prevents fzf from exiting without selection"
+    backward-char:
+      keys:
+        - ctrl-b
+        - left
+    backward-delete-char:
+      keys:
+        - ctrl-h
+        - bspace
+    backward-delete-char/eof:
+      description: "same as backward-delete-char except aborts fzf if query is empty"
+    backward-kill-word:
+      keys:
+        - alt-bs
+    backward-word:
+      keys:
+        - alt-b
+        - shift-left
+    beginning-of-line:
+      keys:
+        - ctrl-a
+        - home
+    cancel:
+      description: "clear query string if not empty, abort fzf otherwise"
+    clear-screen:
+      keys:
+        - ctrl-l
+    clear-selection:
+      description: "clear multi-selection"
+    close:
+      description: "close preview window if open, abort fzf otherwise"
+    clear-query:
+      description: "clear query string"
+    delete-char:
+      keys:
+        - del
+    delete-char/eof:
+      keys:
+        - ctrl-d (same as delete-char except aborts fzf if query is empty)
+    deselect:
+      keys: []
+      description:
+    deselect-all:
+      description: "deselect all matches"
+    disable-search:
+      description: "disable search functionality"
+    down:
+      keys:
+        - ctrl-j
+        - ctrl-n
+        - down
+    enable-search:
+      description: "enable search functionality"
+    end-of-line:
+      keys:
+        - ctrl-e
+        - end
+    first:
+      description: "move to the first match"
+    forward-char:
+      keys:
+        - ctrl-f
+        - right
+    forward-word:
+      keys:
+        - alt-f
+        - shift-right
+    ignore:
+      keys: []
+      description:
+    jump:
+      description: "EasyMotion-like 2-keystroke movement"
+    jump-accept:
+      description: "jump and accept"
+    kill-line:
+      keys: []
+      description:
+    kill-word:
+      keys:
+        - alt-d
+    last:
+      description: "move to the last match"
+    next-history:
+      description: "ctrl-n on --history"
+    page-down:
+      keys:
+        - pgdn
+    page-up:
+      keys:
+        - pgup
+    half-page-down:
+      keys: []
+      description:
+    half-page-up:
+    preview-down:
+      keys:
+        - shift-down
+    preview-up:
+      keys:
+        - shift-up
+    preview-page-down:
+      keys: []
+      description:
+    preview-page-up:
+    preview-half-page-down:
+      keys: []
+      description:
+    preview-half-page-up:
+    preview-bottom:
+      keys: []
+      description:
+    preview-top:
+    previous-history:
+      description: "ctrl-p on --history"
+    print-query:
+      description: "print query and exit"
+    put:
+      description: "put the character to the prompt"
+    refresh-preview:
+      keys: []
+      description:
+    replace-query:
+      description: "replace query string with the current selection"
+    select:
+      keys: []
+      description:
+    select-all:
+      description: "select all matches"
+    toggle:
+      description: "right-click"
+    toggle-all:
+      description: "toggle all matches"
+    toggle+down:
+      keys:
+        - ctrl-i
+      description: "tab"
+    toggle-in:
+      description: "--layout=reverse* ? toggle+up : toggle+down"
+    toggle-out:
+      description: "--layout=reverse* ? toggle+down : toggle+up"
+    toggle-preview:
+      keys: []
+      description:
+    toggle-preview-wrap:
+    toggle-search:
+      description: "toggle search functionality"
+    toggle-sort:
+      keys: []
+      description:
+    toggle+up:
+      keys:
+        - btab
+      description: "shift-tab"
+    unix-line-discard:
+      keys:
+        - ctrl-u
+    unix-word-rubout:
+      keys:
+        - ctrl-w
+    up:
+      keys:
+        - ctrl-k
+        - ctrl-p
+        - up
+    yank:
+      keys:
+        - ctrl-y

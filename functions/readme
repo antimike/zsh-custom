@@ -1,0 +1,71 @@
+# @date March 2022
+# @author Michael Haynes
+# @name readme
+# @summary Fetch a README from a remote repository
+# @synopsis
+# @description `{{name}}` uses `curl` to download the README document from a remote git repository, writing the result to a user-specified destination (default ~/.local/share/man/man1r).  Optionally, the downloaded file will then be converted to `roff` format by an appropriate tool and added to a relevant mansection (default is `1r`, i.e. "command READMEs").
+# @options
+
+zmodload zsh/zutil
+
+local -r MANDIR=~/.local/share/man/man1r
+
+local -A opts=(
+        [-N]=README                     # @zshopt Base filename.  Defaults to README.
+        [-e]=md                         # @zshopt Extension (defaults to md).  Can be provided with or without a leading dot.
+        [-b]=main                       # @zshopt Branch
+        [-f]=                           # @zshopt Filename. If provided, overrides {basename}.{ext} construction of filename.
+        [-u]=                           # @zshopt Repository URL.  If provided, overrides all other attempts at constructing URL.
+        [-d]=~/.local/share/man/man1r   # @zshopt Destination directory for downloaded README.  Default is ~/.local/share/man/man1r/${cmd_name}.${filename}.
+)
+local -a flags=(
+        -v                              # @zshopt Print verbose output to stderr.
+        -h                              # @zshopt Display helptext and exit.
+)
+local -a commands=(
+        find                            # @zshcmd Find and read local README
+        get                             # @zshcmd Fetch README from remote repository
+)
+
+zparseopts -D -E -K -A opts -- ${^${(k)opts#-}}: ${^flags#-}=flags
+local cmd=$1
+local name=$1 filename=${opts[-f]:-${opts[-N]}.${opts[-e]}}
+local repo_url=${opts[-u]} branch=${opts[-b]}
+local outdir=${opts[-d]} dest=${outdir}/${name}.${filename}
+
+if [[ -z $name ]]; then
+        print "Error: You must provide a name for the command you wish to document or peruse" >&2
+        return 1
+elif ! command -v $name >/dev/null 2>&1; then
+        print "Error: Command '$name' not found" >&2
+        print "Error: You must provide a name for the command you wish to document or peruse" >&2
+        return 2
+fi
+
+if [[ -z $url ]]; then
+        local -a docs=(${(f)"$(find $MANDIR -type f -name "*${name}*" -printf '%f\n')"})
+        repo_url=$( print -l $docs | fzf --prompt="Choose README file to display" --preview="pistol ${MANDIR}/{}") || return 3
+fi
+if [[ -z $url ]]; then          # Nothing selected
+        print "No document selected" >&2
+        return 4
+elif [[ -e $url ]]; then        # README is already local
+        pistol $url
+else                            # Remote URL.  Fetch and process
+        case $url in
+                *github*)
+                        case $url in
+                                *raw*) ;;       # Do nothnig---assume user knows what's up
+                                *)
+                                        # Deconstruct URL and reassemble to make sure it's in the right format
+                                        url=${${${${url%blob*}%/${branch}*}%/${filename}*}#*github.com/}
+                                        url=https://github.com/${url}/raw/${branch}/${filename}
+                                        ;;
+                        esac
+                        ;;
+                *) ;;   # TODO: Implement more site-specific logic
+        esac
+        print "Downloading $filename from $url and placing in ${dest}..."
+        curl -L ${url} -o ${dest} &&
+                pistol ${dest}
+fi
